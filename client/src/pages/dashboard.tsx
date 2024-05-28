@@ -43,7 +43,7 @@ import {
 export default function Dashboard() {
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40">
-        <main className="grid flex-1 items-start gap-4 m-8 p-8 sm:px-6 sm:py-0 md:gap-8">
+        <main className="grid flex-1 items-start gap-4 ml-14 mt-8 p-8 sm:px-6 sm:py-0 md:gap-8">
           <Tabs defaultValue="all">
             <div className="flex items-center">
               <TabsList>
