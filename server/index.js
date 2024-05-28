@@ -4,7 +4,7 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const path = require('path');
 
-const parsePipelineYaml = require('./parser/parser.js');
+const parsePipelineYaml = require('./parser/localParser.js');
 
 const FetchAllProjects = require('./api/FetchAllProjects.js')
 const FetchAllPipelines = require('./api/FetchAllPipelines.js')
@@ -19,7 +19,18 @@ app.get('/', async (req, res) => {
     res.json({response});
 })
 
-app.get('/parse-pipeline', (req, res) => {
+app.post('/parse-pipeline', (req, res) => {
+    const yamlString = req.body;
+    const parsedData = parsePipelineYaml(yamlString);
+
+    if (parsedData) {
+        res.json(parsedData);
+    } else {
+        res.status(400).send('Invalid YAML data');
+    }
+});
+
+app.get('/parse-local-pipeline', (req, res) => {
     const filePath = path.join(__dirname, 'data/pipeline.yaml');
     const parsedData = parsePipelineYaml(filePath);
 
