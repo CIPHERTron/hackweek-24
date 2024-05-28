@@ -4,12 +4,13 @@ const cors = require('cors');
 
 const FetchAllProjects = require('./api/FetchAllProjects.js')
 const FetchAllPipelines = require('./api/FetchAllPipelines.js')
+const FetchAllOrgs = require('./api/FetchAllOrgs.js')
 
 const app = express();
 app.use(cors());
 
 app.get('/', async (req, res) => {
-    const response = await FetchAllPipelines();
+    const response = await FetchAllOrgs();
     res.json({response});
 })
 
