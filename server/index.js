@@ -10,7 +10,7 @@ const app = express();
 app.use(cors());
 
 app.get('/', async (req, res) => {
-    const response = await FetchAllOrgs();
+    const response = await FetchAllPipelines();
     res.json({response});
 })
 
