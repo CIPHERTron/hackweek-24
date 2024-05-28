@@ -9,6 +9,7 @@ const parsePipelineYaml = require('./parser/localParser.js');
 const FetchAllProjects = require('./api/FetchAllProjects.js')
 const FetchAllPipelines = require('./api/FetchAllPipelines.js')
 const FetchAllOrgs = require('./api/FetchAllOrgs.js')
+const createStructure = require('./controllers/readFileStructure.js')
 
 const app = express();
 app.use(cors());
@@ -38,6 +39,17 @@ app.get('/parse-local-pipeline', (req, res) => {
         res.json(parsedData);
     } else {
         res.status(400).send('Error parsing the YAML file');
+    }
+});
+
+app.get('/get-structure', async (req, res) => {
+    try {
+        const baseDir = 'harness';
+        const structure = await createStructure(baseDir);
+        res.json(structure);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Error parsing directory structure');
     }
 });
 
