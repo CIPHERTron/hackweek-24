@@ -14,14 +14,11 @@ const FetchPipelineYaml = async (accountId, pipelineId, orgId, projectId, apiKey
         },
         headers: {
             "x-api-key": apiKey
-        },
-        data: {
-            filterType: "PipelineSetup"
         }
     })
 
 
-    // return res.data
+    return res.data
 }
 
 const FetchAllPipelines = async () => {
@@ -33,40 +30,56 @@ const FetchAllPipelines = async () => {
 
     const pipelinesWithYaml = [];
 
-    const res = await axios({
-        method: 'post',
-        url: url,
-        params: {
-            accountIdentifier: accountId,
-            orgIdentifier: orgIdentifier,
-            projectIdentifier: projectIdentifier,
-            hasModule: true,
-            pageSize: 1000
-        },
-        headers: {
-            "x-api-key": apiKey
-        },
-        data: {
-            filterType: "PipelineSetup"
+    try {
+        const res = await axios({
+            method: 'post',
+            url: url,
+            params: {
+                accountIdentifier: accountId,
+                orgIdentifier: orgIdentifier,
+                projectIdentifier: projectIdentifier,
+                hasModule: true,
+                pageSize: 1000
+            },
+            headers: {
+                "x-api-key": apiKey
+            },
+            data: {
+                filterType: "PipelineSetup"
+            }
+        });
+
+        if (res.status) {
+            const pipelines = res.data.data.content || [];
+
+            const pipelinePromises = pipelines.map(async (pipeline) => {
+                const pipelineYaml = await FetchPipelineYaml(accountId, pipeline.identifier, orgIdentifier, projectIdentifier, apiKey);
+
+                return {
+                    pipelineName: pipeline.name || "",
+                    pipelineId: pipeline.identifier || "",
+                    numberOfStages: pipeline.numOfStages || "",
+                    createdAt: pipeline.createdAt,
+                    stageNames: pipeline.stageNames,
+                    entityValidityDetails: pipeline.entityValidityDetails,
+                    storeType: pipeline.storeType,
+                    yaml: pipelineYaml.data.yamlPipeline
+                };
+            });
+
+            const pipelinesWithYamlResults = await Promise.all(pipelinePromises);
+
+            pipelinesWithYaml.push(...pipelinesWithYamlResults);
+
+            return pipelinesWithYaml;
+        } else {
+            return {};
         }
-    })
-
-    if(res.status) {
-        const pipelines = res.data.data.content || [];
-
-        pipelines.forEach(async (pipeline, idx) => {
-            
-
-            if(idx === 0) {
-                const pipelineYaml = await FetchPipelineYaml(accountId, "Tomcat_Build", orgIdentifier, projectIdentifier, apiKey);
-                console.log(pipelineYaml);
-            } 
-        })
-
-        return pipelines;
-    } else {
+    } catch (error) {
+        console.error('Error fetching pipelines:', error);
         return {};
     }
-}
+};
+
 
 module.exports = FetchAllPipelines
