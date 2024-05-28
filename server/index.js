@@ -4,12 +4,15 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const path = require('path');
 
-const parsePipelineYaml = require('./parser/localParser.js');
+const parseLocalPipelineYaml = require('./parser/localParser.js');
+const parsePipelineYaml = require('./parser/parser.js');
+
 
 const FetchAllProjects = require('./api/FetchAllProjects.js')
 const FetchAllPipelines = require('./api/FetchAllPipelines.js')
 const FetchAllOrgs = require('./api/FetchAllOrgs.js')
 const createStructure = require('./controllers/readFileStructure.js')
+const FilterProdPipelines = require('./controllers/filterProdPipelines.js')
 
 const app = express();
 app.use(cors());
@@ -33,7 +36,7 @@ app.post('/parse-pipeline', (req, res) => {
 
 app.get('/parse-local-pipeline', (req, res) => {
     const filePath = path.join(__dirname, 'data/pipeline.yaml');
-    const parsedData = parsePipelineYaml(filePath);
+    const parsedData = parseLocalPipelineYaml(filePath);
 
     if (parsedData) {
         res.json(parsedData);
@@ -46,7 +49,10 @@ app.get('/get-structure', async (req, res) => {
     try {
         const baseDir = 'harness';
         const structure = await createStructure(baseDir);
-        res.json(structure);
+
+        const response = FilterProdPipelines(structure);
+
+        res.json(response);
     } catch (error) {
         console.error(error);
         res.status(500).send('Error parsing directory structure');
