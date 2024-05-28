@@ -1,0 +1,282 @@
+pipeline:
+  name: end to end pipeline
+  identifier: end_to_end_pipeline
+  projectIdentifier: Shashank_Project
+  orgIdentifier: default
+  tags: {}
+  properties:
+    ci:
+      codebase:
+        connectorRef: account.Github
+        build: <+input>
+  stages:
+    - stage:
+        name: buildcode
+        identifier: buildcode
+        description: ""
+        type: CI
+        spec:
+          cloneCodebase: true
+          platform:
+            os: Linux
+            arch: Amd64
+          runtime:
+            type: Docker
+            spec: {}
+          execution:
+            steps:
+              - step:
+                  name: unit_test
+                  identifier: unit_test
+                  type: RunTests
+                  spec:
+                    language: Java
+                    buildTool: Maven
+                    args: mvn clean test
+                    runOnlySelectedTests: true
+                    reports:
+                      type: JUnit
+                      spec:
+                        paths:
+                          - "**/*.xml"
+                    enableTestSplitting: false
+              - step:
+                  type: BuildAndPushDockerRegistry
+                  name: BuildAndPushDockerRegistry_1
+                  identifier: BuildAndPushDockerRegistry_1
+                  spec:
+                    connectorRef: account.harnessImage
+                    repo: test
+                    tags: <+input>
+              - step:
+                  type: AquaTrivy
+                  name: AquaTrivy_1
+                  identifier: AquaTrivy_1
+                  spec:
+                    mode: orchestration
+                    config: default
+                    target:
+                      type: container
+                      detection: auto
+                    advanced:
+                      log:
+                        level: info
+                    privileged: true
+                    image:
+                      type: docker_v2
+                      name: test
+                      tag: latest
+    - stage:
+        name: deploy_dev
+        identifier: deploy_dev
+        description: ""
+        type: Deployment
+        spec:
+          deploymentType: Kubernetes
+          service:
+            serviceRef: dummy_service
+            serviceInputs:
+              serviceDefinition:
+                type: Kubernetes
+                spec:
+                  manifests:
+                    - manifest:
+                        identifier: test
+                        type: K8sManifest
+                        spec:
+                          store:
+                            type: Github
+                            spec:
+                              connectorRef: <+input>
+                              paths: <+input>
+                              repoName: <+input>
+          environment:
+            environmentRef: QA
+            deployToAll: false
+            provisioner:
+              steps:
+                - step:
+                    type: TerraformPlan
+                    name: TT
+                    identifier: TT
+                    timeout: 10m
+                    spec:
+                      provisionerIdentifier: tt123
+                      configuration:
+                        command: Apply
+                        configFiles:
+                          store:
+                            spec:
+                              connectorRef: account.Github
+                              gitFetchType: Branch
+                              branch: main
+                              folderPath: test
+                            type: Github
+                        secretManagerRef: harnessSecretManager
+                        skipRefreshCommand: false
+                - step:
+                    type: HarnessApproval
+                    name: approval
+                    identifier: approval
+                    timeout: 1d
+                    spec:
+                      approvalMessage: approval
+                      includePipelineExecutionHistory: true
+                      approvers:
+                        userGroups:
+                          - account._account_all_users
+                        minimumCount: 1
+                        disallowPipelineExecutor: true
+                      approverInputs: []
+                      isAutoRejectEnabled: false
+                - step:
+                    type: TerraformApply
+                    name: TTTT
+                    identifier: TTTT
+                    timeout: 10m
+                    spec:
+                      provisionerIdentifier: tt123
+                      configuration:
+                        type: InheritFromPlan
+              rollbackSteps:
+                - step:
+                    type: TerraformRollback
+                    name: TTTTTTT
+                    identifier: TTTTTTT
+                    timeout: 10m
+                    spec:
+                      provisionerIdentifier: tt123
+                      skipRefreshCommand: false
+            infrastructureDefinitions:
+              - identifier: qainfra
+          execution:
+            steps:
+              - step:
+                  name: Rollout Deployment
+                  identifier: rolloutDeployment
+                  type: K8sRollingDeploy
+                  timeout: 10m
+                  spec:
+                    skipDryRun: false
+                    pruningEnabled: false
+            rollbackSteps:
+              - step:
+                  name: Rollback Rollout Deployment
+                  identifier: rollbackRolloutDeployment
+                  type: K8sRollingRollback
+                  timeout: 10m
+                  spec:
+                    pruningEnabled: false
+        tags: {}
+        failureStrategies:
+          - onFailure:
+              errors:
+                - AllErrors
+              action:
+                type: ManualIntervention
+    - stage:
+        name: Production approval
+        identifier: Production_approval
+        description: ""
+        type: Approval
+        spec:
+          execution:
+            steps:
+              - step:
+                  name: prodapproval
+                  identifier: prodapproval
+                  type: HarnessApproval
+                  timeout: 1d
+                  spec:
+                    approvalMessage: |-
+                      Please review the following information
+                      and approve the pipeline progression
+                    includePipelineExecutionHistory: true
+                    approvers:
+                      minimumCount: 1
+                      disallowPipelineExecutor: false
+                      userGroups:
+                        - account._account_all_users
+                    isAutoRejectEnabled: false
+                    approverInputs: []
+        tags: {}
+    - stage:
+        name: prod_deploy
+        identifier: prod_deploy
+        description: ""
+        type: Deployment
+        spec:
+          deploymentType: Kubernetes
+          service:
+            useFromStage:
+              stage: deploy_dev
+          environment:
+            environmentRef: prod
+            deployToAll: false
+            infrastructureDefinitions:
+              - identifier: prodinfra
+          execution:
+            steps:
+              - step:
+                  type: JiraCreate
+                  name: Create a prod JIRA
+                  identifier: Create_a_prod_JIRA
+                  spec:
+                    connectorRef: <+input>
+                    projectKey: <+input>
+                    issueType: <+input>
+                    fields: []
+                  timeout: 10m
+              - step:
+                  name: Rollout Deployment
+                  identifier: rolloutDeployment
+                  type: K8sRollingDeploy
+                  timeout: 10m
+                  spec:
+                    skipDryRun: false
+                    pruningEnabled: false
+              - step:
+                  type: JiraUpdate
+                  name: JiraUpdate_1
+                  identifier: JiraUpdate_1
+                  spec:
+                    connectorRef: <+input>
+                    issueKey: <+input>
+                    fields: []
+                  timeout: 10m
+              - step:
+                  type: Verify
+                  name: Verify_1
+                  identifier: Verify_1
+                  spec: {}
+            rollbackSteps:
+              - stepGroup:
+                  name: rollback
+                  identifier: rollback
+                  template:
+                    templateRef: rollback_standard_template
+                    versionLabel: v1
+                    gitBranch: main
+        tags: {}
+        failureStrategies:
+          - onFailure:
+              errors:
+                - AllErrors
+              action:
+                type: StageRollback
+  notificationRules:
+    - name: mynotification
+      identifier: mynotification
+      pipelineEvents:
+        - type: PipelineFailed
+        - type: StageFailed
+          forStages:
+            - AllStages
+        - type: StepFailed
+      notificationMethod:
+        type: Email
+        spec:
+          userGroups: []
+          recipients:
+            - shashank.dwivedi@harness.io
+      enabled: true
