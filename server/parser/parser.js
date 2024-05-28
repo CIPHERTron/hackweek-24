@@ -5,7 +5,7 @@ const parsePipelineYaml = (yamlString) => {
         const doc = yaml.load(yamlString);
 
         const pipelineDetails = {
-            name: doc.pipeline.name,
+            name: doc.pipeline ? doc.pipeline.name : "",
             identifier: doc.pipeline.identifier,
             projectIdentifier: doc.pipeline.projectIdentifier,
             orgIdentifier: doc.pipeline.orgIdentifier,

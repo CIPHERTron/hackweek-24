@@ -1,12 +1,10 @@
 const fs = require('fs');
 const path = require('path');
 
-// Function to read file content
 const readFileContent = (filePath) => {
     return fs.promises.readFile(filePath, 'utf-8');
 };
 
-// Function to create the structured object
 const createStructure = async (baseDir) => {
     const structure = { orgs: {} };
 
