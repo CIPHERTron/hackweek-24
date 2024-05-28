@@ -1,7 +1,10 @@
+const fs = require('fs');
 const yaml = require('js-yaml');
+const path = require('path');
 
-const parsePipelineYaml = (yamlString) => {
+const parsePipelineYaml = (filePath) => {
     try {
+        const yamlString = fs.readFileSync(filePath, 'utf8');
         const doc = yaml.load(yamlString);
 
         const pipelineDetails = {
