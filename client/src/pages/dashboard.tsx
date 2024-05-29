@@ -100,11 +100,24 @@ export default function Dashboard() {
   >([]);
   const [prodScanData, setProdScanData] = useState<any>();
   const [barChartData, setBarChartData] = useState<any>([]);
-  const [rulesLocalStorge] = useLocalStorage("rulesStateKey", {});
+  const [rulesLocalStorage] = useLocalStorage("rulesStateKey", {});
+  const rulesToBeSent: any = [];
+  Object.keys(rulesLocalStorage).map(r => {
+    if(rulesLocalStorage[r]) {
+      rulesToBeSent.push(r)
+    }
+  });
+
   useEffect(() => {
     const fetchScannedData = () => {
       try {
-        fetch("http://localhost:4567/scan-account")
+        fetch("http://localhost:4567/scan-account", {
+          method: 'post',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(rulesToBeSent)
+        })
           .then((data) => data.json())
           .then((res) => setScannedData(res));
       } catch (error) {
@@ -156,7 +169,7 @@ export default function Dashboard() {
   };
 
   const [activeIndex, setActiveIndex] = useState(0);
-  console.log(activeIndex);
+  // console.log(activeIndex);
 
   const handleClick = (data: any, index: number) => {
     setActiveIndex(index);
@@ -238,7 +251,7 @@ export default function Dashboard() {
     });
 
     let currentOrg = barChartData[activeIndex]?.name;
-    console.log(barChartData);
+    // console.log(barChartData);
 
     return (
       <div className="grid gap-4 grid-flow-row ml-7 p-8 min-h-screen w-content flex-col bg-muted/40">
