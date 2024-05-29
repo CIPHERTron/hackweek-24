@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import {
   Accordion,
   AccordionContent,
@@ -103,7 +104,7 @@ export default function Rules() {
   const handleSaveRules = () => {
     setLocalStorageRules(rulesState);
     toast({
-      variant: "destructive",
+      variant: "outline",
       title: "Uh oh! Something went wrong.",
       description: "There was a problem with your request.",
       action: <ToastAction altText="Try again">Try again</ToastAction>,
@@ -144,7 +145,15 @@ export default function Rules() {
 
           <CardFooter>
             <div className="text-xs text-muted-foreground">
-              <Button className="ml-auto" onClick={handleSaveRules}>
+              <Button className="ml-auto" onClick={() => {
+                setLocalStorageRules(rulesState);
+                toast({
+                  variant: "destructive",
+                  title: "Rules Configuration Set",
+                  description: "Selected rules configured successfully!.",
+                  action: <ToastAction altText="GoTo Dashboard"><Link href="/dashboard">View Dashboard</Link></ToastAction>,
+                });
+              }}>
                 Save Rules
               </Button>
             </div>
