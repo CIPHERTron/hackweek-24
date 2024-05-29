@@ -184,6 +184,7 @@ export default function Dashboard() {
   ]);
   // console.log(barChartData);
   const [activeIndex, setActiveIndex] = useState(0);
+  console.log(activeIndex);
 
   const handleClick = (data: any, index: number) => {
     setActiveIndex(index);
@@ -272,16 +273,10 @@ export default function Dashboard() {
     }
     return -1;
   }
-  const sortedData = [...data].sort((a, b) => b.orgScore - a.orgScore);
+  // const sortedData = [...data].sort((a, b) => b.orgScore - a.orgScore);
 
   const activeItem = barChartData[activeIndex];
 
-  // const activeOrgIndex = findOrgIndex(
-  //   drillDownData,
-  //   sortedData[activeIndex].name
-  // );
-  // const activeOrg = Object.keys(drillDownData[activeOrgIndex])[0];
-  // const activeOrgData = drillDownData[activeOrgIndex][activeOrg];
   const status = "red";
   const rulesMap: any = {
     ApprovalBeforeProdRule: "Approval",
@@ -302,8 +297,60 @@ export default function Dashboard() {
     );
   }
 
+  const utility = (projectObj: any, projectId: any) => {
+    const pipelines = projectObj.pipelines;
+    const pipelinesLen = pipelines.length;
+    const globalRules: any = {};
+    const dynamicRules = pipelines[0].rules;
+    Object.keys(dynamicRules).forEach((r) => (globalRules[r] = 0));
+    // console.log(globalRules);
+
+    pipelines.forEach((p) => {
+      const localRules = p.rules;
+
+      Object.keys(localRules).forEach((r) => {
+        if (localRules[r]) {
+          globalRules[r] += 10;
+        }
+      });
+    });
+
+    for (let rule in globalRules) {
+      globalRules[rule] = Math.round(
+        ((globalRules[rule] / pipelinesLen) * 100) / 100
+      );
+    }
+
+    return { project: projectId, ...globalRules };
+  };
+
+  // console.log("finalResult", result);
 
   if (prodScanData) {
+    const result: any = {};
+
+    const orgs = Object.keys(prodScanData);
+
+    orgs.forEach((org) => {
+      result[org] = [];
+    });
+
+    orgs.forEach((org) => {
+      const projectObj = prodScanData[org].projects;
+
+      const projKeys = Object.keys(projectObj);
+
+      projKeys.forEach((projKey) => {
+        const proj = projectObj[projKey];
+        const ruleScoreAtProject = utility(proj, projKey);
+
+        result[org].push(ruleScoreAtProject);
+      });
+    });
+
+    let currentOrg = barChartData[activeIndex]?.name;
+    console.log(result);
+
     return (
       <div className="grid gap-4 grid-flow-row ml-7 p-8 min-h-screen w-content flex-col bg-muted/40">
         <div className="grid grid-cols-4 gap-4 px-7">
@@ -409,21 +456,30 @@ export default function Dashboard() {
                           <TableHead>Total</TableHead>
                         </TableRow>
                       </TableHeader>
-                      {/* <TableBody>
-                        {activeOrgData.map((row) => (
-                          <TableRow key={row.project}>
-                            <TableCell className="font-medium">
-                              {row.project}
-                            </TableCell>
-                            <TableCell>{row.triggers}</TableCell>
-                            <TableCell>{row.cv}</TableCell>
-                            <TableCell>{row.templates}</TableCell>
-                            <TableCell>{row.unitTest}</TableCell>
-                            <TableCell>{row.security}</TableCell>
-                            <TableCell>{row.projectScore}</TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody> */}
+                      <TableBody>
+                        {
+                          result[currentOrg]?.map((x: any) => {
+                            const objKeys = Object.keys(x);
+
+                            let total = 0;
+                            objKeys.forEach(n => {
+                              if(!isNaN(x[n])) {
+                                total += x[n];
+                              }
+                            })
+
+                            return(
+                              <TableRow key={x.project}>
+                                {
+                                  objKeys.map((k) => <TableCell>{x[k]}</TableCell>)
+                                }
+                                <TableCell>{total}</TableCell>
+                              </TableRow>
+                            )
+                          })
+                        }
+                        
+                      </TableBody>
                     </Table>
                   </CardContent>
                 </Card>
