@@ -13,7 +13,7 @@ const checkForDynamicProvisioning = (yamlString) => {
 
             if (provisionerSteps.length > 0) {
                 for (const step of provisionerSteps) {
-                    if (step.type === 'TerraformPlan' || step.type === 'TerraformApply') {
+                    if (step.step.type === 'TerraformPlan' || step.step.type === 'TerraformApply') {
                         return true;
                     }
                 }

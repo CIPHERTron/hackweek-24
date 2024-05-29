@@ -13,7 +13,7 @@ const checkContinuousVerification = (yamlString) => {
             let k8sRollingDeployIndex = -1;
 
             for (let i = 0; i < steps.length; i++) {
-                if (steps[i].type === 'K8sRollingDeploy') {
+                if (steps[i].step.type === 'K8sRollingDeploy') {
                     k8sRollingDeployIndex = i;
                     break;
                 }
@@ -24,7 +24,7 @@ const checkContinuousVerification = (yamlString) => {
             }
 
             for (let i = k8sRollingDeployIndex + 1; i < steps.length; i++) {
-                if (steps[i].type === 'Verify') {
+                if (steps[i].step.type === 'Verify') {
                     return true;
                 }
             }

@@ -15,7 +15,7 @@ const checkIncidentManagement = (yamlString) => {
             let jiraUpdateExists = false;
 
             for (let i = 0; i < steps.length; i++) {
-                if (steps[i].type === 'K8sRollingDeploy') {
+                if (steps[i].step.type === 'K8sRollingDeploy') {
                     k8sRollingDeployIndex = i;
                     break;
                 }
@@ -26,14 +26,14 @@ const checkIncidentManagement = (yamlString) => {
             }
 
             for (let i = 0; i < k8sRollingDeployIndex; i++) {
-                if (steps[i].type === 'JiraCreate') {
+                if (steps[i].step.type === 'JiraCreate') {
                     jiraCreateExists = true;
                     break;
                 }
             }
 
             for (let i = k8sRollingDeployIndex + 1; i < steps.length; i++) {
-                if (steps[i].type === 'JiraUpdate') {
+                if (steps[i].step.type === 'JiraUpdate') {
                     jiraUpdateExists = true;
                     break;
                 }
