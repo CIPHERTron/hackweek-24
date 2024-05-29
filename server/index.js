@@ -23,6 +23,7 @@ const ConfigureNotificationRule = require('./rules/notificationRules.js');
 const RollbackStepRule = require('./rules/rollbackStep.js');
 const RunTestsRule = require('./rules/runStep.js');
 const SecurityScanRule = require('./rules/securityScanStep.js');
+const {transformData, countUniqueOrgsAndProjects} = require('./controllers/transformData.js')
 
 const app = express();
 app.use(cors());
@@ -83,25 +84,40 @@ app.get('/get-structure', async (req, res) => {
         const structure = await createStructure(baseDir);
 
         const {prodPipelines, nonProdPipelines} = FilterProdPipelines(structure);
+        const totalPipelines = prodPipelines.length + nonProdPipelines.length;
 
         const scanResult = [];
 
+        const totalPipelinesObj = [...prodPipelines, ...nonProdPipelines];
+        const {uniqueOrgs, uniqueProjects} = countUniqueOrgsAndProjects(totalPipelinesObj);
+
         if(prodPipelines.length > 0) {
             prodPipelines.forEach(item => {
-                const obj = { org: item.org, project: item.project, pipeline: item.pipeline };
+                const obj = { org: item.org, project: item.project, pipeline: item.pipeline, rules: {} };
 
                 mockRules.forEach((rule) => {
                     const ruleController = RuleControllerMap[rule];
                     const scanRule = ruleController(item.yaml);
 
-                    obj[rule] = scanRule;
+                    obj.rules[rule] = scanRule;
                 })
 
                 scanResult.push(obj);
             })
         }
 
-        res.json(scanResult);
+        const nestedData = transformData(scanResult);
+
+        const finalResult = {
+            totalPipelines,
+            totalProjects: uniqueProjects,
+            totalOrgs: uniqueOrgs,
+            prodPipelines: transformData(prodPipelines),
+            nonProdPipelines: transformData(nonProdPipelines),
+            prodPipelinesScanData: nestedData
+        }
+
+        res.json(finalResult);
     } catch (error) {
         console.error(error);
         res.status(500).send('Error parsing directory structure');
