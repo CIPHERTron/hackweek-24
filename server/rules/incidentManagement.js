@@ -14,7 +14,6 @@ const checkIncidentManagement = (yamlString) => {
             let jiraCreateExists = false;
             let jiraUpdateExists = false;
 
-            // Find the index of the K8sRollingDeploy step
             for (let i = 0; i < steps.length; i++) {
                 if (steps[i].type === 'K8sRollingDeploy') {
                     k8sRollingDeployIndex = i;
@@ -23,11 +22,9 @@ const checkIncidentManagement = (yamlString) => {
             }
 
             if (k8sRollingDeployIndex === -1) {
-                // K8sRollingDeploy step not found
                 return false;
             }
 
-            // Check for JiraCreate before K8sRollingDeploy
             for (let i = 0; i < k8sRollingDeployIndex; i++) {
                 if (steps[i].type === 'JiraCreate') {
                     jiraCreateExists = true;
@@ -35,7 +32,6 @@ const checkIncidentManagement = (yamlString) => {
                 }
             }
 
-            // Check for JiraUpdate after K8sRollingDeploy
             for (let i = k8sRollingDeployIndex + 1; i < steps.length; i++) {
                 if (steps[i].type === 'JiraUpdate') {
                     jiraUpdateExists = true;
