@@ -91,16 +91,24 @@ app.get('/get-structure', async (req, res) => {
         const totalPipelinesObj = [...prodPipelines, ...nonProdPipelines];
         const {uniqueOrgs, uniqueProjects} = countUniqueOrgsAndProjects(totalPipelinesObj);
 
+        const ruleWeightage = Math.round((100 / mockRules.length) * 100) / 100;
+
         if(prodPipelines.length > 0) {
             prodPipelines.forEach(item => {
-                const obj = { org: item.org, project: item.project, pipeline: item.pipeline, rules: {} };
+                const obj = { org: item.org, project: item.project, pipeline: item.pipeline, score: 0, rules: {} };
+                let pipelineScore = 0;
 
                 mockRules.forEach((rule) => {
                     const ruleController = RuleControllerMap[rule];
                     const scanRule = ruleController(item.yaml);
 
+                    if(scanRule) {
+                        pipelineScore += ruleWeightage;
+                    }
+
                     obj.rules[rule] = scanRule;
                 })
+                obj.score = pipelineScore;
 
                 scanResult.push(obj);
             })
@@ -114,8 +122,8 @@ app.get('/get-structure', async (req, res) => {
             totalOrgs: uniqueOrgs,
             totalEmptyProjects: emptyProjects.length,
             emptyProjects,
-            prodPipelines: transformData(prodPipelines),
-            nonProdPipelines: transformData(nonProdPipelines),
+            // prodPipelines: transformData(prodPipelines),
+            // nonProdPipelines: transformData(nonProdPipelines),
             prodPipelinesScanData: nestedData
         }
 
