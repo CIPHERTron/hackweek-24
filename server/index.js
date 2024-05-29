@@ -14,9 +14,41 @@ const FetchAllOrgs = require('./api/FetchAllOrgs.js')
 const createStructure = require('./controllers/readFileStructure.js')
 const FilterProdPipelines = require('./controllers/filterProdPipelines.js')
 
+// Rules import
+const ApprovalBeforeProdRule = require('./rules/approvalBeforeProd.js');
+const ContinuousVerificationRule = require('./rules/continuousVerification.js');
+const DynamicProvisioningRule = require('./rules/dynamicProvision.js');
+const IncidentManagementRule = require('./rules/incidentManagement.js');
+const ConfigureNotificationRule = require('./rules/notificationRules.js');
+const RollbackStepRule = require('./rules/rollbackStep.js');
+const RunTestsRule = require('./rules/runStep.js');
+const SecurityScanRule = require('./rules/securityScanStep.js');
+
 const app = express();
 app.use(cors());
 app.use(bodyParser.text({ type: 'text/yaml' }));
+
+const mockRules = [
+    "ApprovalBeforeProdRule",
+    "ContinuousVerificationRule",
+    "DynamicProvisioningRule",
+    "IncidentManagementRule",
+    "ConfigureNotificationRule",
+    "RollbackStepRule",
+    "RunTestsRule",
+    "SecurityScanRule"
+]
+
+const RuleControllerMap = {
+    "ApprovalBeforeProdRule": ApprovalBeforeProdRule,
+    "ContinuousVerificationRule": ContinuousVerificationRule,
+    "DynamicProvisioningRule": DynamicProvisioningRule,
+    "IncidentManagementRule": IncidentManagementRule,
+    "ConfigureNotificationRule": ConfigureNotificationRule,
+    "RollbackStepRule": RollbackStepRule,
+    "RunTestsRule": RunTestsRule,
+    "SecurityScanRule": SecurityScanRule
+}
 
 app.get('/', async (req, res) => {
     const response = await FetchAllPipelines();
@@ -50,9 +82,26 @@ app.get('/get-structure', async (req, res) => {
         const baseDir = 'harness';
         const structure = await createStructure(baseDir);
 
-        const response = FilterProdPipelines(structure);
+        const {prodPipelines, nonProdPipelines} = FilterProdPipelines(structure);
 
-        res.json(response);
+        const scanResult = [];
+
+        if(prodPipelines.length > 0) {
+            prodPipelines.forEach(item => {
+                const obj = { org: item.org, project: item.project, pipeline: item.pipeline };
+
+                mockRules.forEach((rule) => {
+                    const ruleController = RuleControllerMap[rule];
+                    const scanRule = ruleController(item.yaml);
+
+                    obj[rule] = scanRule;
+                })
+
+                scanResult.push(obj);
+            })
+        }
+
+        res.json(scanResult);
     } catch (error) {
         console.error(error);
         res.status(500).send('Error parsing directory structure');
