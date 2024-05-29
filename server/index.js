@@ -21,7 +21,7 @@ const ConfigureNotificationRule = require('./rules/notificationRules.js');
 const RollbackStepRule = require('./rules/rollbackStep.js');
 const RunTestsRule = require('./rules/runStep.js');
 const SecurityScanRule = require('./rules/securityScanStep.js');
-const {transformData, countUniqueOrgsAndProjects} = require('./controllers/transformData.js')
+const {transformData, countUniqueOrgsAndProjects, calculateProjectAndOrgLevelScores} = require('./controllers/transformData.js')
 
 const app = express();
 app.use(cors());
@@ -114,6 +114,8 @@ app.get('/get-structure', async (req, res) => {
 
         const nestedData = transformData(scanResult);
 
+
+
         const finalResult = {
             totalPipelines,
             totalProjects: uniqueProjects,
@@ -122,7 +124,7 @@ app.get('/get-structure', async (req, res) => {
             emptyProjects,
             // prodPipelines: transformData(prodPipelines),
             // nonProdPipelines: transformData(nonProdPipelines),
-            prodPipelinesScanData: nestedData
+            prodPipelinesScanData: calculateProjectAndOrgLevelScores(nestedData)
         }
 
         res.json(finalResult);
