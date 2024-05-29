@@ -23,15 +23,7 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "~/components/ui/dropdown-menu";
+
 import {
   Table,
   TableBody,
@@ -142,16 +134,6 @@ export default function Dashboard() {
     }
     const sortedData = [...orgsArr].sort((a, b) => b.orgScore - a.orgScore);
     setBarChartData([...sortedData]);
-    // const sortedData = [...orgsArr].sort((a, b) => b.orgScore - a.orgScore);
-
-    // const activeItem = sortedData[activeIndex];
-    // const activeOrgIndex = findOrgIndex(
-    //   drillDownData,
-    //   sortedData[activeIndex].name
-    // );
-    // const activeOrg = Object.keys(drillDownData[activeOrgIndex])[0];
-    // const activeOrgData = drillDownData[activeOrgIndex][activeOrg];
-    // setBarChartData({ activeOrg, activeOrgData });
   }, [prodScanData]);
 
   const pieChartEmptyProject = [
@@ -173,16 +155,6 @@ export default function Dashboard() {
     yellow: "#FAFA33",
   };
 
-  const [data] = useState([
-    { name: "Org A", orgScore: 4000, amt: 4000 },
-    { name: "Org B", orgScore: 3000, amt: 3000 },
-    { name: "Org C", orgScore: 2000, amt: 2000 },
-    { name: "Org D", orgScore: 2780, amt: 2780 },
-    { name: "Org E", orgScore: 1890, amt: 1890 },
-    { name: "Org F", orgScore: 2390, amt: 2390 },
-    { name: "Org G", orgScore: 3490, amt: 3490 },
-  ]);
-  // console.log(barChartData);
   const [activeIndex, setActiveIndex] = useState(0);
   console.log(activeIndex);
 
@@ -190,90 +162,7 @@ export default function Dashboard() {
     setActiveIndex(index);
   };
 
-  function getRandomInt(min: number, max: number) {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-  }
-
-  function generateRandomProjectData(projectName: string) {
-    const triggers = getRandomInt(0, 20);
-    const cv = getRandomInt(0, 20);
-    const templates = getRandomInt(0, 20);
-    const unitTest = getRandomInt(0, 20);
-    const security = getRandomInt(0, 20);
-    const projectScore = triggers + cv + templates + unitTest + security;
-
-    return {
-      project: projectName,
-      triggers,
-      cv,
-      templates,
-      unitTest,
-      security,
-      projectScore,
-    };
-  }
-
-  function generateRandomOrgData(projectNames: Array<string>) {
-    return projectNames.map((projectName: string) =>
-      generateRandomProjectData(projectName)
-    );
-  }
-
-  const orgProjectNames = [
-    {
-      org: "Org A",
-      projects: ["Alpha", "Beta", "Gamma", "Delta", "Eta"],
-    },
-    {
-      org: "Org B",
-      projects: ["Theta", "Iota"],
-    },
-    {
-      org: "Org C",
-      projects: ["Omicron", "Pi", "Tau", "Upsilon", "Phi"],
-    },
-    {
-      org: "Org D",
-      projects: ["Chi", "Psi", "Omega", "Delta2"],
-    },
-    {
-      org: "Org E",
-      projects: ["Epsilon2", "Zeta2", "Eta2", "Theta2", "Iota2", "Kappa2"],
-    },
-    {
-      org: "Org F",
-      projects: ["Mu2", "Nu2", "Xi2", "Sigma2"],
-    },
-    {
-      org: "Org G",
-      projects: [
-        "Tau2",
-        "Upsilon2",
-        "Phi2",
-        "Chi2",
-        "Psi2",
-        "Omega2",
-        "Alpha3",
-      ],
-    },
-  ];
-
-  const drillDownData = orgProjectNames.map(({ org, projects }) => ({
-    [org]: generateRandomOrgData(projects),
-  }));
-
-  // console.log("drilldown", drillDownData);
-
   const { theme } = useTheme();
-  function findOrgIndex(data: any, orgName: string) {
-    for (let i = 0; i < data.length; i++) {
-      if (Object.keys(data[i])[0] === orgName) {
-        return i;
-      }
-    }
-    return -1;
-  }
-  // const sortedData = [...data].sort((a, b) => b.orgScore - a.orgScore);
 
   const activeItem = barChartData[activeIndex];
 
@@ -305,7 +194,7 @@ export default function Dashboard() {
     Object.keys(dynamicRules).forEach((r) => (globalRules[r] = 0));
     // console.log(globalRules);
 
-    pipelines.forEach((p) => {
+    pipelines.forEach((p: any) => {
       const localRules = p.rules;
 
       Object.keys(localRules).forEach((r) => {
@@ -349,7 +238,7 @@ export default function Dashboard() {
     });
 
     let currentOrg = barChartData[activeIndex]?.name;
-    console.log(result);
+    console.log(barChartData);
 
     return (
       <div className="grid gap-4 grid-flow-row ml-7 p-8 min-h-screen w-content flex-col bg-muted/40">
@@ -358,7 +247,7 @@ export default function Dashboard() {
             <CardHeader>
               <CardTitle className="flex gap-5 justify-around">
                 <div className="text-base">Compliant Rules Enforced</div>
-                <div>8</div>
+                <div>{rulesArrayCol.length}</div>
               </CardTitle>
             </CardHeader>
           </Card>
@@ -366,7 +255,7 @@ export default function Dashboard() {
             <CardHeader>
               <CardTitle className="flex gap-5 justify-around">
                 <div className="text-base">Total Organisations</div>
-                <div>45</div>
+                <div>{scannedState.totalOrgs}</div>
               </CardTitle>
             </CardHeader>
           </Card>
@@ -374,7 +263,9 @@ export default function Dashboard() {
             <CardHeader>
               <CardTitle className="flex gap-5 justify-around">
                 <div className="text-base">% of compliant Organisation</div>
-                <div>67%</div>
+                <div>
+                  {(barChartData.length / scannedState.totalOrgs) * 100}
+                </div>
               </CardTitle>
             </CardHeader>
           </Card>
@@ -384,7 +275,7 @@ export default function Dashboard() {
           >
             <CardHeader>
               <CardTitle className="flex gap-5 justify-around">
-                <div className={`text-base `}>Adpoption Status</div>
+                <div className={`text-base `}>Deployment Maturity</div>
                 <div>Yellow</div>
               </CardTitle>
             </CardHeader>
@@ -431,9 +322,10 @@ export default function Dashboard() {
                 >
                   <CardHeader>
                     <CardTitle className="flex gap-5 justify-between">
-                      {/* <div>
-                        {activeOrg} <span className="text-primary">Insights</span>
-                      </div> */}
+                      <div>
+                        {currentOrg}{" "}
+                        <span className="text-primary"> Org Insights</span>
+                      </div>
                       <div
                         className="border border-blue-500 rounded-lg px-4 py-1 "
                         style={{ fontSize: "15px" }}
@@ -457,28 +349,25 @@ export default function Dashboard() {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {
-                          result[currentOrg]?.map((x: any) => {
-                            const objKeys = Object.keys(x);
+                        {result[currentOrg]?.map((x: any) => {
+                          const objKeys = Object.keys(x);
 
-                            let total = 0;
-                            objKeys.forEach(n => {
-                              if(!isNaN(x[n])) {
-                                total += x[n];
-                              }
-                            })
+                          let total = 0;
+                          objKeys.forEach((n) => {
+                            if (!isNaN(x[n])) {
+                              total += x[n];
+                            }
+                          });
 
-                            return(
-                              <TableRow key={x.project}>
-                                {
-                                  objKeys.map((k) => <TableCell>{x[k]}</TableCell>)
-                                }
-                                <TableCell>{total}</TableCell>
-                              </TableRow>
-                            )
-                          })
-                        }
-                        
+                          return (
+                            <TableRow key={x.project}>
+                              {objKeys.map((k) => (
+                                <TableCell>{x[k]}</TableCell>
+                              ))}
+                              <TableCell>{total}</TableCell>
+                            </TableRow>
+                          );
+                        })}
                       </TableBody>
                     </Table>
                   </CardContent>
@@ -522,7 +411,7 @@ export default function Dashboard() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {nonProdData?.map((row) => (
+                    {nonProdData?.slice(0, 5).map((row) => (
                       <TableRow key={row.org}>
                         <TableCell className="font-medium">{row.org}</TableCell>
                         <TableCell>{row.project}</TableCell>
