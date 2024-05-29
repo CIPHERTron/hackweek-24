@@ -83,7 +83,7 @@ app.get('/get-structure', async (req, res) => {
         const baseDir = 'harness';
         const structure = await createStructure(baseDir);
 
-        const {prodPipelines, nonProdPipelines} = FilterProdPipelines(structure);
+        const {prodPipelines, nonProdPipelines, emptyProjects} = FilterProdPipelines(structure);
         const totalPipelines = prodPipelines.length + nonProdPipelines.length;
 
         const scanResult = [];
@@ -112,6 +112,8 @@ app.get('/get-structure', async (req, res) => {
             totalPipelines,
             totalProjects: uniqueProjects,
             totalOrgs: uniqueOrgs,
+            totalEmptyProjects: emptyProjects.length,
+            emptyProjects,
             prodPipelines: transformData(prodPipelines),
             nonProdPipelines: transformData(nonProdPipelines),
             prodPipelinesScanData: nestedData
