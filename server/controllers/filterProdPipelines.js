@@ -3,7 +3,6 @@ const PipelineParser = require('../parser/parser.js')
 const checkProdPipelines = (pipelineStr) => {
     let result = false;
     const parsedYaml = PipelineParser(pipelineStr);
-    console.log(pipelineStr)
 
     const stages = parsedYaml.stages || [];
 
@@ -37,14 +36,14 @@ const FilterProdPipelines = (structure) => {
                         org: org,
                         project: project,
                         pipeline: pipeline,
-                        yaml: pipelineYaml
+                        // yaml: pipelineYaml
                     })
                 } else {
                     nonProdPipelines.push({
                         org: org,
                         project: project,
                         pipeline: pipeline,
-                        yaml: pipelineYaml
+                        // yaml: pipelineYaml
                     })
                 }
             })
