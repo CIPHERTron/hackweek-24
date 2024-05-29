@@ -22,13 +22,21 @@ const createStructure = async (baseDir) => {
                     structure.orgs[org][project] = {};
                     const pipelineFiles = await fs.promises.readdir(projectPath);
 
+                    let hasYamlFiles = false;
+
                     for (const pipeline of pipelineFiles) {
                         const pipelinePath = path.join(projectPath, pipeline);
                         if (path.extname(pipeline) === '.yaml') {
                             const pipelineKey = path.basename(pipeline, '.yaml');
                             const pipelineContent = await readFileContent(pipelinePath);
                             structure.orgs[org][project][pipelineKey] = pipelineContent;
+                            hasYamlFiles = true;
                         }
+                    }
+
+                    // If there are no YAML files, ensure the directory is included
+                    if (!hasYamlFiles) {
+                        structure.orgs[org][project] = {};
                     }
                 }
             }
@@ -38,4 +46,4 @@ const createStructure = async (baseDir) => {
     return structure;
 };
 
-module.exports = createStructure
+module.exports = createStructure;
