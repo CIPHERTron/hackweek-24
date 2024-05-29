@@ -17,7 +17,7 @@ const checkRollbackStep = (yamlString) => {
         return false;
     }
 
-    const k8sRollingDeployStep = prodDeploymentStage.steps.find(step => step.type === 'K8sRollingDeploy');
+    const k8sRollingDeployStep = prodDeploymentStage.steps.find(step => step.step.type === 'K8sRollingDeploy');
     if (!k8sRollingDeployStep) {
         return false;
     }

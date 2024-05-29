@@ -10,7 +10,7 @@ const checkCiStageWithSecurityScanStep = (yamlString) => {
     for (const stage of pipelineDetails.stages) {
         if (stage.type === 'CI') {
             for (const step of stage.steps) {
-                if (step.type === 'AquaTrivy') {
+                if (step.step.type === 'AquaTrivy') {
                     return true;
                 }
             }

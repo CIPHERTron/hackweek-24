@@ -8,9 +8,7 @@ const parseLocalPipelineYaml = require('./parser/localParser.js');
 const parsePipelineYaml = require('./parser/parser.js');
 
 
-const FetchAllProjects = require('./api/FetchAllProjects.js')
 const FetchAllPipelines = require('./api/FetchAllPipelines.js')
-const FetchAllOrgs = require('./api/FetchAllOrgs.js')
 const createStructure = require('./controllers/readFileStructure.js')
 const FilterProdPipelines = require('./controllers/filterProdPipelines.js')
 

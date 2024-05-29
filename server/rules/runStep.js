@@ -10,7 +10,7 @@ const checkCiStageWithRunTestsStep = (yamlString) => {
     for (const stage of pipelineDetails.stages) {
         if (stage.type === 'CI') {
             for (const step of stage.steps) {
-                if (step.type === 'RunTests') {
+                if (step.step.type === 'RunTests') {
                     return true;
                 }
             }
