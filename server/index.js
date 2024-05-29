@@ -28,7 +28,7 @@ const {
 
 const app = express()
 app.use(cors())
-app.use(bodyParser.text({ type: 'text/yaml' }))
+app.use(bodyParser.json())
 
 const mockRules = [
     'ApprovalBeforeProdRule',
@@ -79,8 +79,9 @@ app.get('/parse-local-pipeline', (req, res) => {
     }
 })
 
-app.get('/scan-account', async (req, res) => {
+app.post('/scan-account', async (req, res) => {
     try {
+        const rulesToBeSent = req.body;
         const baseDir = 'harness'
         const structure = await createStructure(baseDir)
 
@@ -94,7 +95,7 @@ app.get('/scan-account', async (req, res) => {
         const { uniqueOrgs, uniqueProjects } =
             countUniqueOrgsAndProjects(totalPipelinesObj)
 
-        const ruleWeightage = Math.round((100 / mockRules.length) * 100) / 100
+        const ruleWeightage = Math.round((100 / rulesToBeSent.length) * 100) / 100
 
         if (prodPipelines.length > 0) {
             prodPipelines.forEach((item) => {
@@ -107,7 +108,7 @@ app.get('/scan-account', async (req, res) => {
                 }
                 let pipelineScore = 0
 
-                mockRules.forEach((rule) => {
+                rulesToBeSent.forEach((rule) => {
                     const ruleController = RuleControllerMap[rule]
                     const scanRule = ruleController(item.yaml)
 
