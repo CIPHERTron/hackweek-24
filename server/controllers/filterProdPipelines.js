@@ -36,14 +36,14 @@ const FilterProdPipelines = (structure) => {
                         org: org,
                         project: project,
                         pipeline: pipeline,
-                        // yaml: pipelineYaml
+                        yaml: pipelineYaml
                     })
                 } else {
                     nonProdPipelines.push({
                         org: org,
                         project: project,
                         pipeline: pipeline,
-                        // yaml: pipelineYaml
+                        yaml: pipelineYaml
                     })
                 }
             })
