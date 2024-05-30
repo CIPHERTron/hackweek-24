@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { File, ListFilter, MoreHorizontal, PlusCircle } from "lucide-react";
+import AceEditor from 'react-ace';
 import React, { PureComponent, act, useEffect, useState } from "react";
 import {
   BarChart,
@@ -33,6 +34,24 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "~/components/ui/drawer"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "~/components/ui/dialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { useTheme } from "next-themes";
 import PieChartComponent from "~/components/PieChartComponent";
@@ -95,6 +114,8 @@ export default function Dashboard() {
   const [emptyProjects, setEmptyProjects] = useState<
     EmptyProject[] | undefined
   >([]);
+  const [currProject, setCurrProject] = useState("");
+  const [currPipelines, setCurrPipelines] = useState<any>([]);
   const [nonProdData, setNonProdData] = useState<
     NonProdPipelines[] | undefined
   >([]);
@@ -253,6 +274,11 @@ export default function Dashboard() {
     let currentOrg = barChartData[activeIndex]?.name;
     // console.log(barChartData);
 
+
+    let currentPipelines = currProject ? prodScanData[currentOrg]?.projects[currProject]?.pipelines : prodScanData[currentOrg]?.projects[Object.keys(prodScanData[currentOrg]?.projects)[0]]?.pipelines;
+    console.log("currentPipelines", currentPipelines)
+
+    
     return (
       <div className="grid gap-4 grid-flow-row ml-7 p-8 min-h-screen w-content flex-col bg-muted/40">
         <div className="grid grid-cols-4 gap-4 px-7">
@@ -351,6 +377,7 @@ export default function Dashboard() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
+                    <Drawer>
                     <Table>
                       <TableHeader>
                         <TableRow>
@@ -373,16 +400,83 @@ export default function Dashboard() {
                           });
 
                           return (
-                            <TableRow key={x.project}>
+                            <>
+                            <DrawerTrigger asChild>
+                            <TableRow style={{cursor: 'pointer'}}>
                               {objKeys.map((k) => (
-                                <TableCell>{x[k]}</TableCell>
+                                <TableCell><p onClick={() => setCurrProject(x?.project)} key={x.project}>{x[k]}</p></TableCell>
                               ))}
                               <TableCell>{total}</TableCell>
                             </TableRow>
+                            </DrawerTrigger>
+                            </>
                           );
                         })}
                       </TableBody>
                     </Table>
+
+                    <DrawerContent>
+                      <div>
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead>Pipeline ID</TableHead>
+                                <TableHead>Score</TableHead>
+                                <TableHead>YAML</TableHead>
+                              </TableRow>
+                            </TableHeader>
+
+                            <TableBody>
+                              {
+                                
+                                currentPipelines ? currentPipelines?.map((pipe: any) => (
+                                  <TableRow>
+                                <TableCell>{pipe?.pipeline}</TableCell>
+                                <TableCell>{pipe?.score}</TableCell>
+                                <Dialog>
+                                <DialogTrigger><TableCell style={{cursor: 'pointer', color: 'blue'}}>View YAML</TableCell></DialogTrigger>
+                                <DialogContent>
+                                  <DialogHeader>
+                                    <DialogTitle>Pipeline YAML</DialogTitle>
+                                    <DialogDescription>
+                                    <AceEditor
+                                      style={{
+                                        height: '80vh',
+                                        width: '100%',
+                                        marginTop: '2%',
+                                        borderRadius: '6px',
+                                      }}
+                                      placeholder='Placeholder Text'
+                                      mode='sass'
+                                      theme='solarized_dark'
+                                      name='PipelineYAML'
+                                      readOnly
+                                      fontSize={14}
+                                      showPrintMargin={false}
+                                      showGutter
+                                      highlightActiveLine
+                                      value={pipe?.yaml}
+                                      setOptions={{
+                                        enableBasicAutocompletion: false,
+                                        enableLiveAutocompletion: false,
+                                        enableSnippets: false,
+                                        showLineNumbers: true,
+                                        tabSize: 2,
+                                        animatedScroll: true,
+                                      }}
+                                    />
+                                    </DialogDescription>
+                                  </DialogHeader>
+                                </DialogContent>
+                                </Dialog>
+                              </TableRow>
+                                )) : <p>loading...</p>
+                              }
+                            </TableBody>
+                          </Table>
+                      </div>
+                    </DrawerContent>
+                    </Drawer>
                   </CardContent>
                 </Card>
               </div>
