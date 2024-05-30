@@ -383,14 +383,14 @@ export default function Dashboard() {
                       <TableHeader>
                         <TableRow>
                           <TableHead>Project</TableHead>
-                          {[...rulesArrayCol].map((rule) => (
-                            <TableHead>{rulesMap[rule]}</TableHead>
+                          {[...rulesArrayCol].map((rule, id) => (
+                            <TableHead key={`${rule}_${id}`}>{rulesMap[rule]}</TableHead>
                           ))}
                           <TableHead>Total</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {result[currentOrg]?.map((x: any) => {
+                        {result[currentOrg]?.map((x: any, id: any) => {
                           const objKeys = Object.keys(x);
 
                           let total = 0;
@@ -401,16 +401,14 @@ export default function Dashboard() {
                           });
 
                           return (
-                            <>
-                            <DrawerTrigger asChild>
+                            <DrawerTrigger key={`${x}_${id}`} asChild>
                             <TableRow style={{cursor: 'pointer'}}>
-                              {objKeys.map((k) => (
-                                <TableCell><p onClick={() => setCurrProject(x?.project)} key={x.project}>{x[k]}</p></TableCell>
+                              {objKeys.map((k, i) => (
+                                <TableCell key={`${x.project}_${i}`}><p onClick={() => setCurrProject(x?.project)}>{x[k]}</p></TableCell>
                               ))}
                               <TableCell>{total}</TableCell>
                             </TableRow>
                             </DrawerTrigger>
-                            </>
                           );
                         })}
                       </TableBody>
@@ -430,8 +428,8 @@ export default function Dashboard() {
                             <TableBody>
                               {
                                 
-                                currentPipelines ? currentPipelines?.map((pipe: any) => (
-                                  <TableRow>
+                                currentPipelines ? currentPipelines?.map((pipe: any, id: any) => (
+                                <TableRow key={`${pipe?.pipeline}_${id}`}>
                                 <TableCell>{pipe?.pipeline}</TableCell>
                                 <TableCell>{pipe?.score}</TableCell>
                                 <Dialog>
@@ -525,8 +523,8 @@ export default function Dashboard() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {nonProdData?.slice(0, 5).map((row) => (
-                      <TableRow key={row.org}>
+                    {nonProdData?.slice(0, 5).map((row, id) => (
+                      <TableRow key={`${row.org}_${id}`}>
                         <TableCell className="font-medium">{row.org}</TableCell>
                         <TableCell>{row.project}</TableCell>
                         <TableCell className="text-right">
@@ -575,8 +573,8 @@ export default function Dashboard() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {emptyProjects?.map((row) => (
-                      <TableRow key={row.org}>
+                    {emptyProjects?.map((row, id) => (
+                      <TableRow key={`${row.org}_${id}`}>
                         <TableCell className="font-medium">{row.org}</TableCell>
                         <TableCell>{row.project}</TableCell>
                         <TableCell className="text-right">
