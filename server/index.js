@@ -103,6 +103,7 @@ app.post('/scan-account', async (req, res) => {
                     org: item.org,
                     project: item.project,
                     pipeline: item.pipeline,
+                    yaml: item.yaml,
                     score: 0,
                     rules: {},
                 }
