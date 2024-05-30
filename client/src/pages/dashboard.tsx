@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { File, ListFilter, MoreHorizontal, PlusCircle } from "lucide-react";
-import AceEditor from 'react-ace';
+import AceEditor from "react-ace";
 import React, { PureComponent, act, useEffect, useState } from "react";
 import {
   BarChart,
@@ -43,7 +43,7 @@ import {
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
-} from "~/components/ui/drawer"
+} from "~/components/ui/drawer";
 import {
   Dialog,
   DialogContent,
@@ -51,7 +51,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "~/components/ui/dialog"
+} from "~/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { useTheme } from "next-themes";
 import PieChartComponent from "~/components/PieChartComponent";
@@ -274,11 +274,13 @@ export default function Dashboard() {
     let currentOrg = barChartData[activeIndex]?.name;
     // console.log(barChartData);
 
+    let currentPipelines = currProject
+      ? prodScanData[currentOrg]?.projects[currProject]?.pipelines
+      : prodScanData[currentOrg]?.projects[
+          Object.keys(prodScanData[currentOrg]?.projects)[0]
+        ]?.pipelines;
+    console.log("currentPipelines", currentPipelines);
 
-    let currentPipelines = currProject ? prodScanData[currentOrg]?.projects[currProject]?.pipelines : prodScanData[currentOrg]?.projects[Object.keys(prodScanData[currentOrg]?.projects)[0]]?.pipelines;
-    console.log("currentPipelines", currentPipelines)
-
-    
     return (
       <div className="grid gap-4 grid-flow-row ml-7 p-8 min-h-screen w-content flex-col bg-muted/40">
         <div className="grid grid-cols-4 gap-4 px-7">
@@ -393,12 +395,12 @@ export default function Dashboard() {
                         {result[currentOrg]?.map((x: any, id: any) => {
                           const objKeys = Object.keys(x);
 
-                          let total = 0;
-                          objKeys.forEach((n) => {
-                            if (!isNaN(x[n])) {
-                              total += x[n];
-                            }
-                          });
+                            let total = 0;
+                            objKeys.forEach((n) => {
+                              if (!isNaN(x[n])) {
+                                total += x[n];
+                              }
+                            });
 
                           return (
                             <DrawerTrigger key={`${x}_${id}`} asChild>
@@ -414,8 +416,8 @@ export default function Dashboard() {
                       </TableBody>
                     </Table>
 
-                    <DrawerContent>
-                      <div>
+                      <DrawerContent>
+                        <div>
                           <Table>
                             <TableHeader>
                               <TableRow>
@@ -473,8 +475,8 @@ export default function Dashboard() {
                               }
                             </TableBody>
                           </Table>
-                      </div>
-                    </DrawerContent>
+                        </div>
+                      </DrawerContent>
                     </Drawer>
                   </CardContent>
                 </Card>
