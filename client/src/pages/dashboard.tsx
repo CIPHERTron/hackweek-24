@@ -2,6 +2,7 @@ import Image from "next/image";
 import { File, ListFilter, MoreHorizontal, PlusCircle } from "lucide-react";
 import AceEditor from "react-ace";
 import React, { PureComponent, act, useEffect, useState } from "react";
+import {Triangle} from 'react-loader-spinner';
 import {
   BarChart,
   Bar,
@@ -593,6 +594,18 @@ export default function Dashboard() {
       </div>
     );
   } else {
-    return <></>;
+    return (
+      <div style={{height: '100vh', width: '100vw', display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
+        <Triangle
+          visible={true}
+          height="80"
+          width="80"
+          color="#3FAFE9"
+          ariaLabel="triangle-loading"
+          wrapperStyle={{}}
+          wrapperClass=""
+        />
+      </div>
+    );
   }
 }
